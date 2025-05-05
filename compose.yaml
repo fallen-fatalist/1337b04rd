@@ -24,4 +24,4 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./db_init:/docker-entrypoint-initdb.d
+      - ./internal/adapter/storage/migrations:/docker-entrypoint-initdb.d

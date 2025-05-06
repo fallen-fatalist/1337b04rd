@@ -1,13 +1,19 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
 
 	"1337bo4rd/internal/adapter/config"
 	flag "1337bo4rd/internal/adapter/config"
+	httpserver "1337bo4rd/internal/adapter/handler/http"
 	"1337bo4rd/internal/adapter/logger"
+	"1337bo4rd/internal/adapter/storage/postgres"
+	"1337bo4rd/internal/adapter/storage/postgres/repository"
+	"1337bo4rd/internal/core/service"
 )
 
 func Run() {
@@ -25,6 +31,22 @@ func Run() {
 	slog.Info("Staring application", "app", config.App.Name, "env", config.App.Env)
 
 	// Init database
-	// ctx := context.Background()
-	// db, err :=
+	db, err := postgres.OpenDB(config.DB)
+	if err != nil {
+		slog.Error("Failed to connect to the database", "error", err)
+		os.Exit(1)
+	}
+	defer db.Close()
+
+	// Posts
+	postRepo := repository.NewPostRepository(db)
+	postService := service.NewPostService(postRepo)
+	postHandler := httpserver.NewPostHandler(postService)
+
+	mux := httpserver.NewRouter(*postHandler)
+
+	slog.Info(fmt.Sprintf("Listening on port: %d", flag.Port))
+	err = http.ListenAndServe(fmt.Sprintf(":%d", flag.Port), mux)
+	log.Fatal(err)
+
 }

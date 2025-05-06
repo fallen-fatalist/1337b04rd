@@ -11,7 +11,7 @@ WORKDIR /app
 COPY . .
 
 # Build the Go binary
-RUN go build -o main ./cmd/http
+RUN go build -o main .
 
 # Stage 2: Runtime
 FROM alpine:latest
@@ -26,4 +26,4 @@ COPY --from=builder /app/main .
 EXPOSE 8080
 
 # Run the application
-CMD ["./main"]
+CMD ["./main", "--port", "8080"]

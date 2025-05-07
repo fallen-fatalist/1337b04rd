@@ -22,12 +22,20 @@ func NewPostHandler(svc port.PostService) *PostHandler {
 }
 
 func (h *PostHandler) HandleCatalog(w http.ResponseWriter, r *http.Request) {
-	posts, _ := h.svc.ListActive()
+	posts, err := h.svc.ListActive()
+	if err != nil {
+		renderError(w, h.tmpl, http.StatusInternalServerError, "Failed to load threads.")
+		return
+	}
 	h.tmpl.ExecuteTemplate(w, "catalog.html", struct{ Posts []domain.Post }{posts})
 }
 
 func (h *PostHandler) HandleArchive(w http.ResponseWriter, r *http.Request) {
-	posts, _ := h.svc.ListPosts()
+	posts, err := h.svc.ListPosts()
+	if err != nil {
+		renderError(w, h.tmpl, http.StatusInternalServerError, "Failed to load threads.")
+		return
+	}
 	h.tmpl.ExecuteTemplate(w, "archive.html", struct{ Posts []domain.Post }{posts})
 }
 

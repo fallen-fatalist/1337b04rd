@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error {{.StatusCode}}</title>
+    <style>
+        body {
+            background-color: #fefefe;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            color: #333;
+        }
+        .error-box {
+            display: inline-block;
+            padding: 20px 30px;
+            background-color: #eee;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0 0 10px;
+            font-size: 48px;
+        }
+        p {
+            font-size: 18px;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #555;
+            border: 1px solid #ccc;
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+        a:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-box">
+        <h1>Error {{.StatusCode}}</h1>
+        <p>{{.Message}}</p>
+        <a href="/">Back to catalog</a>
+    </div>
+</body>
+</html>

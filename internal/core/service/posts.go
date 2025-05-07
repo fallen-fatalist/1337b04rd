@@ -3,6 +3,9 @@ package service
 import (
 	"1337bo4rd/internal/core/domain"
 	"1337bo4rd/internal/core/port"
+	"database/sql"
+	"errors"
+	"time"
 )
 
 type PostService struct {
@@ -23,7 +26,44 @@ func (s *PostService) CreatePost(post *domain.Post) error {
 }
 
 func (s *PostService) ListPosts() ([]domain.Post, error) {
-	return s.repo.ListPosts()
+	posts, err := s.repo.ListPosts()
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
+func (s *PostService) ListActive() ([]domain.Post, error) {
+	posts, err := s.repo.ListPosts()
+	if err != nil {
+		return nil, err
+	}
+
+	var validPosts []domain.Post
+	now := time.Now()
+
+	for _, post := range posts {
+		comment, err := s.repo.ListPostComments(&post.ID)
+		if err != nil {
+			// No comment found, fallback to post time
+			if errors.Is(err, sql.ErrNoRows) {
+				if now.Sub(post.CreatedAt) < 10*time.Minute {
+					validPosts = append(validPosts, post)
+				}
+				continue
+			}
+			// Some other error
+			return nil, err
+		}
+
+		// If comment exists, check if it's recent enough
+		if now.Sub(comment.CreatedAt) < 15*time.Minute {
+			validPosts = append(validPosts, post)
+		}
+	}
+
+	return validPosts, nil
 }
 
 func validatePost(p *domain.Post) error {
@@ -31,8 +71,6 @@ func validatePost(p *domain.Post) error {
 		return port.ErrEmptyTitle
 	} else if p.Content == "" {
 		return port.ErrEmptyContent
-	} else if p.Avatar == "" {
-		return port.ErrEmptyAvatar
 	}
 	return nil
 }

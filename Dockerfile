@@ -22,6 +22,9 @@ WORKDIR /app
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/main .
 
+# copy templates
+COPY templates/ ./templates/ 
+
 # Expose the port
 EXPOSE 8080
 

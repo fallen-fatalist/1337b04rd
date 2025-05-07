@@ -9,7 +9,7 @@ func NewRouter(
 ) http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/posts", postHandler.HandlePosts)
+	mux.HandleFunc("/", postHandler.HandleCatalog)
 
 	// Logging middleware applied
 	middlewareAppliedMux := RequestLoggingMiddleware(mux)

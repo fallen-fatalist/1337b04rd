@@ -1,10 +1,12 @@
 package domain
 
+import "time"
+
 type Post struct {
-	ID        uint64 `json:"post_id"`
-	Title     string `json:"title"`
-	Content   string `json:"content"`
-	Avatar    string `json:"avatar"`
-	Image     string `json:"image,omitempty"`
-	CreatedAt string `json:"created_at"`
+	ID        uint64    `json:"post_id"`
+	UserID    uint64    `json:"user_id"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	Image     string    `json:"image,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 }

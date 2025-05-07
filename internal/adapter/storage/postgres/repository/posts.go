@@ -24,16 +24,16 @@ func (r *PostRepository) CreatePost(post *domain.Post) error {
 	)
 	if post.Image != "" {
 		query = `
-		INSERT INTO posts (title, content, avatar, image)
+		INSERT INTO posts (user_id, title, content, image)
 		VALUES ($1, $2, $3, $4)
 		`
-		args = []interface{}{post.Title, post.Content, post.Avatar, post.Image}
+		args = []interface{}{post.UserID, post.Title, post.Content, post.Image}
 	} else {
 		query = `
-		INSERT INTO posts (title, content, avatar)
+		INSERT INTO posts (user_id, title, content)
 		VALUES ($1, $2, $3)
 		`
-		args = []interface{}{post.Title, post.Content, post.Avatar}
+		args = []interface{}{post.UserID, post.Title, post.Content}
 	}
 
 	_, err := r.db.Exec(query, args...)
@@ -59,7 +59,7 @@ func (r *PostRepository) ListPosts() ([]domain.Post, error) {
 	for rows.Next() {
 		var post domain.Post
 		var image sql.NullString
-		if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.Avatar, &image, &post.CreatedAt); err != nil {
+		if err := rows.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &image, &post.CreatedAt); err != nil {
 			return nil, err
 		}
 		if image.Valid {
@@ -76,4 +76,28 @@ func (r *PostRepository) ListPosts() ([]domain.Post, error) {
 	}
 
 	return posts, nil
+}
+
+func (r *PostRepository) ListPostComments(id *uint64) (domain.Comment, error) {
+	query := `
+	SELECT * FROM comments
+	WHERE post_id = $1
+	ORDER BY comment_id DESC
+	LIMIT 1
+	`
+	rows := r.db.QueryRow(query, id)
+	var comment domain.Comment
+	var postID sql.NullInt64
+	var pcID sql.NullInt64
+	if err := rows.Scan(&comment.ID, &comment.UserID, &postID, &pcID, &comment.Content, &comment.CreatedAt); err != nil {
+		return domain.Comment{}, err
+	}
+
+	if postID.Valid {
+		comment.PostID = uint64(postID.Int64)
+	} else {
+		comment.PostID = 0
+	}
+
+	return comment, nil
 }

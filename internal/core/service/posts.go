@@ -30,8 +30,10 @@ func (s *PostService) ListPosts() ([]domain.Post, error) {
 	if err != nil {
 		return nil, err
 	}
+	// add logic for deleted threads
 
 	return posts, nil
+
 }
 
 func (s *PostService) ListActive() ([]domain.Post, error) {

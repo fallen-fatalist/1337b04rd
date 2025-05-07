@@ -10,6 +10,7 @@ func NewRouter(
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", postHandler.HandleCatalog)
+	mux.HandleFunc("/archive", postHandler.HandleArchive)
 
 	// Logging middleware applied
 	middlewareAppliedMux := RequestLoggingMiddleware(mux)

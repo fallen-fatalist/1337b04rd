@@ -27,7 +27,8 @@ func (h *PostHandler) HandleCatalog(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandler) HandleArchive(w http.ResponseWriter, r *http.Request) {
-
+	posts, _ := h.svc.ListPosts()
+	h.tmpl.ExecuteTemplate(w, "archive.html", struct{ Posts []domain.Post }{posts})
 }
 
 // func (h *PostHandler) HandlePosts(w http.ResponseWriter, r *http.Request) {

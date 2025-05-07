@@ -40,7 +40,13 @@ func Run() {
 
 	// Posts
 	postRepo := repository.NewPostRepository(db)
-	postService := service.NewPostService(postRepo)
+	commentRepo := repository.NewCommentRepository(db)
+
+	// Services
+	commentSercice := service.NewCommentService(commentRepo)
+	postService := service.NewPostService(postRepo, commentSercice)
+
+	// Handlers
 	postHandler := httpserver.NewPostHandler(postService)
 
 	mux := httpserver.NewRouter(*postHandler)

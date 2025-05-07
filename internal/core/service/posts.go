@@ -9,12 +9,14 @@ import (
 )
 
 type PostService struct {
-	repo port.PostRepository
+	repo       port.PostRepository
+	commentSvc *CommentService
 }
 
-func NewPostService(repo port.PostRepository) *PostService {
+func NewPostService(repo port.PostRepository, commentSvc *CommentService) *PostService {
 	return &PostService{
-		repo: repo,
+		repo:       repo,
+		commentSvc: commentSvc,
 	}
 }
 
@@ -46,7 +48,7 @@ func (s *PostService) ListActive() ([]domain.Post, error) {
 	now := time.Now()
 
 	for _, post := range posts {
-		comment, err := s.repo.ListPostComments(&post.ID)
+		comment, err := s.commentSvc.repo.GetLastComment(&post.ID)
 		if err != nil {
 			// No comment found, fallback to post time
 			if errors.Is(err, sql.ErrNoRows) {
@@ -60,7 +62,7 @@ func (s *PostService) ListActive() ([]domain.Post, error) {
 		}
 
 		// If comment exists, check if it's recent enough
-		if now.Sub(comment.CreatedAt) < 15*time.Minute {
+		if now.Sub(comment.CreatedAt) < 1*time.Minute {
 			validPosts = append(validPosts, post)
 		}
 	}

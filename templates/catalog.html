@@ -63,7 +63,7 @@
             border-radius: 3px;
             margin-bottom: 10px;
         }
-        .thread-content {
+        .thread-title {
             font-size: 14px;
             line-height: 1.4;
             max-height: 100px;
@@ -117,7 +117,7 @@
                                 <span>No image</span>
                             </div>
                         {{end}}
-                        <div class="thread-content">{{.Content}}</div>
+                        <div class="thread-title">{{.Title}}</div>
                         <div class="thread-info">
                             <span>ID: {{.ID}}</span>
                             <span>{{.CreatedAt.Format "Jan 02, 15:04"}}</span>

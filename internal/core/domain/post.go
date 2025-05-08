@@ -10,3 +10,8 @@ type Post struct {
 	Image     string
 	CreatedAt time.Time
 }
+
+type PostComents struct {
+	Post     Post
+	Comments []Comment
+}

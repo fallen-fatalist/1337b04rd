@@ -3,6 +3,7 @@ package repository
 import (
 	"1337bo4rd/internal/core/domain"
 	"database/sql"
+	"time"
 )
 
 type PostRepository struct {
@@ -71,16 +72,82 @@ func (r *PostRepository) ListPosts() ([]domain.Post, error) {
 	return posts, nil
 }
 
-func (r *PostRepository) GetPostById(id *uint64) (*domain.Post, error) {
+func (r *PostRepository) GetPostWithCommentsById(id *uint64) (*domain.PostComents, error) {
 	query := `
-	SELECT * FROM posts
-	WHERE post_id = $1
+	SELECT 
+		p.post_id, p.user_id, p.title, p.content, p.image, p.created_at,
+		c.comment_id, c.user_id, c.post_id, c.parent_comment_id, c.content, c.created_at
+	FROM posts p
+	LEFT JOIN comments c ON c.post_id = p.post_id
+	WHERE p.post_id = $1
+	ORDER BY c.created_at ASC
 	`
-	var post domain.Post
-	var image sql.NullString
-	if err := r.db.QueryRow(query, id).Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &image, &post.CreatedAt); err != nil {
+
+	rows, err := r.db.Query(query, id)
+	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	return &post, nil
+	var post domain.Post
+	var comments []domain.Comment
+	seen := false
+
+	for rows.Next() {
+		var (
+			postID    uint64
+			userID    string
+			title     string
+			content   string
+			image     sql.NullString
+			createdAt time.Time
+
+			commentID        sql.NullInt64
+			commentUserID    sql.NullString
+			commentPostID    sql.NullInt64
+			parentCommentID  sql.NullInt64
+			commentContent   sql.NullString
+			commentCreatedAt sql.NullTime
+		)
+
+		if err := rows.Scan(
+			&postID, &userID, &title, &content, &image, &createdAt,
+			&commentID, &commentUserID, &commentPostID, &parentCommentID, &commentContent, &commentCreatedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		if !seen {
+			post = domain.Post{
+				ID:        postID,
+				UserID:    userID,
+				Title:     title,
+				Content:   content,
+				Image:     image.String,
+				CreatedAt: createdAt,
+			}
+			seen = true
+		}
+
+		if commentID.Valid {
+			comment := domain.Comment{
+				ID:              uint64(commentID.Int64),
+				UserID:          commentUserID.String,
+				PostID:          uint64(commentPostID.Int64),
+				ParentCommentID: uint64(parentCommentID.Int64),
+				Content:         commentContent.String,
+				CreatedAt:       commentCreatedAt.Time,
+			}
+			comments = append(comments, comment)
+		}
+	}
+
+	if !seen {
+		return nil, sql.ErrNoRows
+	}
+
+	return &domain.PostComents{
+		Post:     post,
+		Comments: comments,
+	}, nil
 }

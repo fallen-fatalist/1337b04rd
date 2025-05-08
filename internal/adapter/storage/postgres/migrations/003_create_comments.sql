@@ -9,5 +9,3 @@ CREATE TABLE comments (
     FOREIGN KEY (post_id) REFERENCES posts(post_id),
     FOREIGN KEY (parent_comment_id) REFERENCES comments(comment_id)
 );
-
---     expires_at TIMESTAMPTZ,

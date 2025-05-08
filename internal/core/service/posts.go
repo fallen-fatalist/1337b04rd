@@ -71,17 +71,12 @@ func (s *PostService) ListActive() ([]domain.Post, error) {
 	return validPosts, nil
 }
 
-func (s *PostService) GetPostById(idStr string) (*domain.Post, error) {
-	id, err := strconv.Atoi(idStr)
+func (s *PostService) GetPostWithCommentsById(idStr string) (*domain.PostComents, error) {
+	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		return nil, err
+		return nil, port.ErrInvalidPostId
 	}
-	uid := uint64(id)
-	post, err := s.repo.GetPostById(&uid)
-	if err != nil {
-		return nil, err
-	}
-	return post, nil
+	return s.repo.GetPostWithCommentsById(&id)
 }
 
 func validatePost(p *domain.Post) error {

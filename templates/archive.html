@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1337bo4rd Catalog</title>
+    <title>1337bo4rd Archive</title>
     <style>
         body {
             background-color: #f0f0f0;
@@ -109,7 +109,7 @@
     <div class="catalog">
         {{if .Posts}}
             {{range .Posts}}
-                <a href="/thread/{{.ID}}" class="thread-link">
+                <a href="/post/{{.ID}}" class="thread-link">
                     <div class="thread">
                         {{if .Image}}
                             <img src="{{.Image}}" alt="Thread image" class="thread-image">

@@ -7,6 +7,3 @@ CREATE TABLE posts (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (user_id) REFERENCES users(user_id) 
 );
-
---     expires_at TIMESTAMPTZ,
---     active BOOLEAN 

@@ -1,6 +1,6 @@
 CREATE TABLE posts (
     post_id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL, 
+    user_id TEXT NOT NULL, 
     title VARCHAR(20) NOT NULL,
     content TEXT NOT NULL,
     image TEXT,

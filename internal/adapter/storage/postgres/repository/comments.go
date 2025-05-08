@@ -30,11 +30,5 @@ func (r *CommentRepository) GetLastComment(id *uint64) (*domain.Comment, error) 
 		return &domain.Comment{}, err
 	}
 
-	if postID.Valid {
-		comment.PostID = uint64(postID.Int64)
-	} else {
-		comment.PostID = 0
-	}
-
 	return &comment, nil
 }

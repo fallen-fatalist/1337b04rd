@@ -2,21 +2,28 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 👤 Users
-INSERT INTO users (name, avatar, expires_at) VALUES
-('Rick', 'https://rickandmortyapi.com/api/character/avatar/1.jpeg', NOW() + INTERVAL '7 days'),
-('Morty', 'https://rickandmortyapi.com/api/character/avatar/2.jpeg', NOW() + INTERVAL '7 days'),
-('Summer', 'https://rickandmortyapi.com/api/character/avatar/3.jpeg', NOW() + INTERVAL '7 days'),
-('Beth', 'https://rickandmortyapi.com/api/character/avatar/4.jpeg', NOW() + INTERVAL '7 days'),
-('Jerry', 'https://rickandmortyapi.com/api/character/avatar/5.jpeg', NOW() + INTERVAL '7 days');
+INSERT INTO users (user_id, name, avatar, expires_at) VALUES
+(uuid_generate_v4(), 'Rick', 'https://rickandmortyapi.com/api/character/avatar/1.jpeg', NOW() + INTERVAL '7 days'),
+(uuid_generate_v4(), 'Morty', 'https://rickandmortyapi.com/api/character/avatar/2.jpeg', NOW() + INTERVAL '7 days'),
+(uuid_generate_v4(), 'Summer', 'https://rickandmortyapi.com/api/character/avatar/3.jpeg', NOW() + INTERVAL '7 days'),
+(uuid_generate_v4(), 'Beth', 'https://rickandmortyapi.com/api/character/avatar/4.jpeg', NOW() + INTERVAL '7 days'),
+(uuid_generate_v4(), 'Jerry', 'https://rickandmortyapi.com/api/character/avatar/5.jpeg', NOW() + INTERVAL '7 days');
 
--- 🧵 Posts
+-- For referencing users later, create temp table or CTE to get their UUIDs
+WITH u AS (
+  SELECT user_id, name FROM users
+)
+
+-- 🧵 Posts (replace with real UUIDs after user insert)
 INSERT INTO posts (user_id, title, content, image) VALUES
-(1, 'Welcome Hackers', 'First post on the board!', 'https://s3.example.com/bucket1/welcome.jpg'),
-(2, '1337 Tips', 'Remember to hide your IP.', NULL),
-(3, 'Ask Anything', 'Thread for random questions', 'https://s3.example.com/bucket2/questions.png');
+((SELECT user_id FROM users WHERE name = 'Rick'), 'Welcome Hackers', 'First post on the board!', 'https://s3.example.com/bucket1/welcome.jpg'),
+((SELECT user_id FROM users WHERE name = 'Morty'), '1337 Tips', 'Remember to hide your IP.', NULL),
+((SELECT user_id FROM users WHERE name = 'Summer'), 'Ask Anything', 'Thread for random questions', 'https://s3.example.com/bucket2/questions.png');
 
--- 💬 Comments
+-- 💬 Comments (post_id references above)
 INSERT INTO comments (user_id, post_id, content) VALUES
-(2, 1, 'Nice board!'),
-(3, 1, 'Can I post images?'),
-(1, 3, 'Feel free to ask anything.');
+((SELECT user_id FROM users WHERE name = 'Morty'), 1, 'Nice board!'),
+((SELECT user_id FROM users WHERE name = 'Summer'), 1, 'Can I post images?'),
+((SELECT user_id FROM users WHERE name = 'Rick'), 3, 'Feel free to ask anything.');
+
+--  GOVNO MOKI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

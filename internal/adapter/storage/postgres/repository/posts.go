@@ -3,8 +3,6 @@ package repository
 import (
 	"1337bo4rd/internal/core/domain"
 	"database/sql"
-
-	_ "github.com/lib/pq"
 )
 
 type PostRepository struct {
@@ -62,11 +60,6 @@ func (r *PostRepository) ListPosts() ([]domain.Post, error) {
 		if err := rows.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &image, &post.CreatedAt); err != nil {
 			return nil, err
 		}
-		if image.Valid {
-			post.Image = image.String
-		} else {
-			post.Image = ""
-		}
 
 		posts = append(posts, post)
 	}
@@ -78,4 +71,16 @@ func (r *PostRepository) ListPosts() ([]domain.Post, error) {
 	return posts, nil
 }
 
-// func (r *PostRepository) GetPostById(id *uint64)
+func (r *PostRepository) GetPostById(id *uint64) (*domain.Post, error) {
+	query := `
+	SELECT * FROM posts
+	WHERE post_id = $1
+	`
+	var post domain.Post
+	var image sql.NullString
+	if err := r.db.QueryRow(query, id).Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &image, &post.CreatedAt); err != nil {
+		return nil, err
+	}
+
+	return &post, nil
+}

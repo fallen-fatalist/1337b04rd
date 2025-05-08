@@ -11,7 +11,8 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_PORT=${DB_PORT}
     depends_on:
-      - db 
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:15
@@ -25,3 +26,8 @@ services:
       - "5432:5432"
     volumes:
       - ./internal/adapter/storage/postgres/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

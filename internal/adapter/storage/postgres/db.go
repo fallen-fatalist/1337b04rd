@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log/slog"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 // Singleton Pattern: SQL database connection

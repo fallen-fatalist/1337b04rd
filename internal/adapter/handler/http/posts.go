@@ -39,51 +39,14 @@ func (h *PostHandler) HandleArchive(w http.ResponseWriter, r *http.Request) {
 	h.tmpl.ExecuteTemplate(w, "archive.html", struct{ Posts []domain.Post }{posts})
 }
 
-// func (h *PostHandler) HandlePosts(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("Content-Type", "application/json")
-// 	switch r.Method {
-// 	case http.MethodPost:
-// 		var post domain.Post
-// 		decoder := json.NewDecoder(r.Body)
-// 		err := decoder.Decode(&post)
-// 		if err != nil {
-// 			jsonErrorRespond(w, err, http.StatusInternalServerError)
-// 			return
-// 		}
-// 		err = h.svc.CreatePost(&post)
-// 		if err != nil {
-// 			statusCode := http.StatusInternalServerError
-// 			switch err {
-// 			case port.ErrEmptyAvatar,
-// 				port.ErrEmptyContent,
-// 				port.ErrEmptyTitle:
-// 				statusCode = http.StatusBadRequest
-// 			}
-// 			jsonErrorRespond(w, err, statusCode)
-// 			return
-// 		}
-// 		jsonMessageRespond(w, "Post have created succesfully", http.StatusOK)
-// 		return
-// 	case http.MethodGet:
-// 		posts, err := h.svc.ListPosts()
-// 		if err != nil {
-// 			if errors.Is(err, sql.ErrNoRows) {
-// 				jsonMessageRespond(w, port.ErrNoPosts.Error(), http.StatusOK)
-// 				return
-// 			}
-// 			jsonErrorRespond(w, err, http.StatusInternalServerError)
-// 		}
+func (h *PostHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
 
-// 		jsonPayload, err := json.MarshalIndent(posts, "", "   ")
-// 		if err != nil {
-// 			jsonErrorRespond(w, err, http.StatusInternalServerError)
-// 			return
-// 		}
-// 		w.Write(jsonPayload)
-// 		return
-// 	default:
-// 		w.Header().Set("Allow", "GET, POST")
-// 		w.WriteHeader(http.StatusMethodNotAllowed)
-// 		return
-// 	}
-// }
+	post, err := h.svc.GetPostById(id)
+
+	if err != nil {
+		renderError(w, h.tmpl, http.StatusInternalServerError, "Failed to load threads.")
+		return
+	}
+	h.tmpl.ExecuteTemplate(w, "post.html", struct{ Post *domain.Post }{post})
+}

@@ -1,20 +1,20 @@
 package httpserver
 
 import (
+	"1337bo4rd/internal/core/service"
 	"net/http"
 )
 
 func NewRouter(
 	postHandler PostHandler,
+	userSvc *service.UserService,
 ) http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", postHandler.HandleCatalog)
-	mux.HandleFunc("/archive", postHandler.HandleArchive)
+	mw := SessionMiddleware(userSvc)
 
-	// Logging middleware applied
-	middlewareAppliedMux := RequestLoggingMiddleware(mux)
-	middlewareAppliedMux = HeadersMiddleware(middlewareAppliedMux)
+	mux.Handle("/", mw(http.HandlerFunc(postHandler.HandleCatalog)))
+	mux.Handle("/archive", mw(http.HandlerFunc(postHandler.HandleArchive)))
 
-	return middlewareAppliedMux
+	return mux
 }

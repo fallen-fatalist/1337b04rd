@@ -1,6 +1,6 @@
 CREATE TABLE comments (
     comment_id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL,
+    user_id TEXT NOT NULL,
     post_id BIGINT NOT NULL,
     parent_comment_id BIGINT,
     content TEXT NOT NULL,

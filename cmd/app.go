@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"1337bo4rd/internal/adapter/api"
 	"1337bo4rd/internal/adapter/config"
 	flag "1337bo4rd/internal/adapter/config"
 	httpserver "1337bo4rd/internal/adapter/handler/http"
@@ -38,18 +39,21 @@ func Run() {
 	}
 	defer db.Close()
 
+	// Avatar provider
+	avatarProv := api.NewRickAndMorty()
+
 	// Posts
 	postRepo := repository.NewPostRepository(db)
 	commentRepo := repository.NewCommentRepository(db)
-
+	userRepo := repository.NewUserRepository(db)
 	// Services
 	commentSercice := service.NewCommentService(commentRepo)
 	postService := service.NewPostService(postRepo, commentSercice)
-
+	userService := service.NewUserService(userRepo, avatarProv)
 	// Handlers
 	postHandler := httpserver.NewPostHandler(postService)
 
-	mux := httpserver.NewRouter(*postHandler)
+	mux := httpserver.NewRouter(*postHandler, userService)
 
 	slog.Info(fmt.Sprintf("Listening on port: %d", flag.Port))
 	err = http.ListenAndServe(fmt.Sprintf(":%d", flag.Port), mux)

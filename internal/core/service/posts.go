@@ -5,6 +5,7 @@ import (
 	"1337bo4rd/internal/core/port"
 	"database/sql"
 	"errors"
+	"strconv"
 	"time"
 )
 
@@ -62,12 +63,25 @@ func (s *PostService) ListActive() ([]domain.Post, error) {
 		}
 
 		// If comment exists, check if it's recent enough
-		if now.Sub(comment.CreatedAt) < 1*time.Minute {
+		if now.Sub(comment.CreatedAt) < 15*time.Minute {
 			validPosts = append(validPosts, post)
 		}
 	}
 
 	return validPosts, nil
+}
+
+func (s *PostService) GetPostById(idStr string) (*domain.Post, error) {
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return nil, err
+	}
+	uid := uint64(id)
+	post, err := s.repo.GetPostById(&uid)
+	if err != nil {
+		return nil, err
+	}
+	return post, nil
 }
 
 func validatePost(p *domain.Post) error {

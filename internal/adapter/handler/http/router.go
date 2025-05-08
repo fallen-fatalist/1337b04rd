@@ -16,6 +16,7 @@ func NewRouter(
 	mux.Handle("/", mw(http.HandlerFunc(postHandler.HandleCatalog)))
 	mux.Handle("/archive", mw(http.HandlerFunc(postHandler.HandleArchive)))
 	mux.Handle("/post/{id}", mw(http.HandlerFunc(postHandler.HandlePost)))
+	mux.Handle("/create", mw(http.HandlerFunc(postHandler.HandleCreate)))
 
 	return mux
 }

@@ -23,7 +23,7 @@ func (r *UserRepository) GetUserById(id string) (*domain.User, error) {
 	WHERE user_id = $1
 	`
 
-	err := r.db.QueryRow(query).Scan(&user.ID, &user.Name, &user.Avatar, &user.ExpiresAt)
+	err := r.db.QueryRow(query, id).Scan(&user.ID, &user.Name, &user.Avatar, &user.ExpiresAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}

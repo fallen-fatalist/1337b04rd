@@ -17,28 +17,28 @@ func NewPostRepository(db *sql.DB) *PostRepository {
 }
 
 func (r *PostRepository) CreatePost(post *domain.Post) error {
-	// var (
-	// 	query string
-	// 	args  []interface{}
-	// )
-	// if post.Image != "" {
-	// 	query = `
-	// INSERT INTO posts (user_id, title, content, image)
-	// VALUES ($1, $2, $3, $4)
-	// `
-	// 	args = []interface{}{post.UserID, post.Title, post.Content, post.Image}
-	// } else {
-	// 	query = `
-	// INSERT INTO posts (user_id, title, content)
-	// VALUES ($1, $2, $3)
-	// `
-	// 	args = []interface{}{post.UserID, post.Title, post.Content}
-	// }
+	var (
+		query string
+		args  []interface{}
+	)
+	if post.Image != "" {
+		query = `
+	INSERT INTO posts (user_name, user_avatar, title, content, image)
+	VALUES ($1, $2, $3, $4, $5)
+	`
+		args = []interface{}{post.UserName, post.UserAvatar, post.Title, post.Content, post.Image}
+	} else {
+		query = `
+	INSERT INTO posts (user_name, user_avatar, title, content)
+	VALUES ($1, $2, $3, $4)
+	`
+		args = []interface{}{post.UserName, post.UserAvatar, post.Title, post.Content}
+	}
 
-	// _, err := r.db.Exec(query, args...)
-	// if err != nil {
-	// 	return err
-	// }
+	_, err := r.db.Exec(query, args...)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -55,6 +55,8 @@ func (h *PostHandler) HandleArchive(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
+	// add logic for r.Method(POST) Addd comments!
+
 	posts, err := h.svc.GetPostWithCommentsById(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, port.ErrInvalidPostId) {
@@ -72,3 +74,7 @@ func (h *PostHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 
 	h.tmpl.ExecuteTemplate(w, "post.html", data)
 }
+
+// func (h *PostHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
+
+// }

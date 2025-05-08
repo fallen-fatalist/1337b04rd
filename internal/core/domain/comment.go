@@ -4,7 +4,8 @@ import "time"
 
 type Comment struct {
 	ID              uint64
-	UserID          string
+	UserName        string
+	UserAvatar      string
 	PostID          uint64
 	ParentCommentID uint64
 	Content         string

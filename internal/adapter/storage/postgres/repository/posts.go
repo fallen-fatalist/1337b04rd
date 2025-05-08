@@ -17,28 +17,28 @@ func NewPostRepository(db *sql.DB) *PostRepository {
 }
 
 func (r *PostRepository) CreatePost(post *domain.Post) error {
-	var (
-		query string
-		args  []interface{}
-	)
-	if post.Image != "" {
-		query = `
-		INSERT INTO posts (user_id, title, content, image)
-		VALUES ($1, $2, $3, $4)
-		`
-		args = []interface{}{post.UserID, post.Title, post.Content, post.Image}
-	} else {
-		query = `
-		INSERT INTO posts (user_id, title, content)
-		VALUES ($1, $2, $3)
-		`
-		args = []interface{}{post.UserID, post.Title, post.Content}
-	}
+	// var (
+	// 	query string
+	// 	args  []interface{}
+	// )
+	// if post.Image != "" {
+	// 	query = `
+	// INSERT INTO posts (user_id, title, content, image)
+	// VALUES ($1, $2, $3, $4)
+	// `
+	// 	args = []interface{}{post.UserID, post.Title, post.Content, post.Image}
+	// } else {
+	// 	query = `
+	// INSERT INTO posts (user_id, title, content)
+	// VALUES ($1, $2, $3)
+	// `
+	// 	args = []interface{}{post.UserID, post.Title, post.Content}
+	// }
 
-	_, err := r.db.Exec(query, args...)
-	if err != nil {
-		return err
-	}
+	// _, err := r.db.Exec(query, args...)
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
@@ -58,7 +58,7 @@ func (r *PostRepository) ListPosts() ([]domain.Post, error) {
 	for rows.Next() {
 		var post domain.Post
 		var image sql.NullString
-		if err := rows.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &image, &post.CreatedAt); err != nil {
+		if err := rows.Scan(&post.ID, &post.UserName, &post.UserAvatar, &post.Title, &post.Content, &image, &post.CreatedAt); err != nil {
 			return nil, err
 		}
 
@@ -75,8 +75,8 @@ func (r *PostRepository) ListPosts() ([]domain.Post, error) {
 func (r *PostRepository) GetPostWithCommentsById(id *uint64) (*domain.PostComents, error) {
 	query := `
 	SELECT 
-		p.post_id, p.user_id, p.title, p.content, p.image, p.created_at,
-		c.comment_id, c.user_id, c.post_id, c.parent_comment_id, c.content, c.created_at
+		p.post_id, p.user_name, p.user_avatar, p.title, p.content, p.image, p.created_at,
+		c.comment_id, c.user_name, c.user_avatar, c.post_id, c.parent_comment_id, c.content, c.created_at
 	FROM posts p
 	LEFT JOIN comments c ON c.post_id = p.post_id
 	WHERE p.post_id = $1
@@ -95,15 +95,17 @@ func (r *PostRepository) GetPostWithCommentsById(id *uint64) (*domain.PostComent
 
 	for rows.Next() {
 		var (
-			postID    uint64
-			userID    string
-			title     string
-			content   string
-			image     sql.NullString
-			createdAt time.Time
+			postID       uint64
+			postUserName string
+			postAvatar   string
+			title        string
+			content      string
+			image        sql.NullString
+			createdAt    time.Time
 
 			commentID        sql.NullInt64
-			commentUserID    sql.NullString
+			commentUserName  sql.NullString
+			commentAvatar    sql.NullString
 			commentPostID    sql.NullInt64
 			parentCommentID  sql.NullInt64
 			commentContent   sql.NullString
@@ -111,20 +113,21 @@ func (r *PostRepository) GetPostWithCommentsById(id *uint64) (*domain.PostComent
 		)
 
 		if err := rows.Scan(
-			&postID, &userID, &title, &content, &image, &createdAt,
-			&commentID, &commentUserID, &commentPostID, &parentCommentID, &commentContent, &commentCreatedAt,
+			&postID, &postUserName, &postAvatar, &title, &content, &image, &createdAt,
+			&commentID, &commentUserName, &commentAvatar, &commentPostID, &parentCommentID, &commentContent, &commentCreatedAt,
 		); err != nil {
 			return nil, err
 		}
 
 		if !seen {
 			post = domain.Post{
-				ID:        postID,
-				UserID:    userID,
-				Title:     title,
-				Content:   content,
-				Image:     image.String,
-				CreatedAt: createdAt,
+				ID:         postID,
+				UserName:   postUserName,
+				UserAvatar: postAvatar,
+				Title:      title,
+				Content:    content,
+				Image:      image.String,
+				CreatedAt:  createdAt,
 			}
 			seen = true
 		}
@@ -132,7 +135,8 @@ func (r *PostRepository) GetPostWithCommentsById(id *uint64) (*domain.PostComent
 		if commentID.Valid {
 			comment := domain.Comment{
 				ID:              uint64(commentID.Int64),
-				UserID:          commentUserID.String,
+				UserName:        commentUserName.String,
+				UserAvatar:      commentAvatar.String,
 				PostID:          uint64(commentPostID.Int64),
 				ParentCommentID: uint64(parentCommentID.Int64),
 				Content:         commentContent.String,

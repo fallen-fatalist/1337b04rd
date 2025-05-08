@@ -26,7 +26,7 @@ func (r *CommentRepository) GetLastComment(id *uint64) (*domain.Comment, error) 
 	var comment domain.Comment
 	var postID sql.NullInt64
 	var pcID sql.NullInt64
-	if err := rows.Scan(&comment.ID, &comment.UserID, &postID, &pcID, &comment.Content, &comment.CreatedAt); err != nil {
+	if err := rows.Scan(&comment.ID, &comment.UserName, &comment.UserAvatar, &postID, &pcID, &comment.Content, &comment.CreatedAt); err != nil {
 		return &domain.Comment{}, err
 	}
 

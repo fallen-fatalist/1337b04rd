@@ -47,8 +47,7 @@ func Run() {
 	commentRepo := repository.NewCommentRepository(db)
 	userRepo := repository.NewUserRepository(db)
 	// Services
-	commentSercice := service.NewCommentService(commentRepo)
-	postService := service.NewPostService(postRepo, commentSercice)
+	postService := service.NewPostService(postRepo, commentRepo)
 	userService := service.NewUserService(userRepo, avatarProv)
 	// Handlers
 	postHandler := httpserver.NewPostHandler(postService)

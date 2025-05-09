@@ -8,6 +8,8 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 type PostHandler struct {
@@ -44,13 +46,23 @@ func (h *PostHandler) HandleArchive(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
 
 	// add logic for r.Method(POST) Addd comments!
+	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/post/"), "/")
+	id := parts[0]
 
-	posts, err := h.svc.GetPostWithCommentsById(id)
+	if len(parts) > 1 && parts[1] == "comment" && r.Method == http.MethodPost {
+		h.addComment(w, r, id)
+		return
+	}
+
+	postWithComments, err := h.svc.GetPostWithCommentsById(id)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, port.ErrInvalidPostId) {
+		switch err {
+		case sql.ErrNoRows:
+			msg = port.ErrNoPosts.Error()
+			statusCode = http.StatusBadRequest
+		case port.ErrInvalidPostId:
 			statusCode = http.StatusBadRequest
 			msg = err.Error()
 		}
@@ -58,10 +70,34 @@ func (h *PostHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Build comment tree
+	nodes := make(map[uint64]*domain.CommentNode)
+	for _, c := range postWithComments.Comments {
+		comment := c // copy to avoid pointer issue
+		nodes[c.ID] = &domain.CommentNode{Comment: &comment}
+	}
+
+	var roots []*domain.CommentNode
+	for _, node := range nodes {
+		if node.ParentCommentID != 0 {
+			if parent, ok := nodes[node.ParentCommentID]; ok {
+				parent.Replies = append(parent.Replies, node)
+				continue
+			}
+		}
+		roots = append(roots, node)
+	}
+
+	// Template data
 	data := struct {
-		Posts *domain.PostComents
-		User  *domain.User
-	}{posts, getSession(r)}
+		Post        *domain.Post
+		CommentTree []*domain.CommentNode
+		User        *domain.User
+	}{
+		Post:        &postWithComments.Post,
+		CommentTree: roots,
+		User:        getSession(r),
+	}
 
 	h.tmpl.ExecuteTemplate(w, "post.html", data)
 }
@@ -101,4 +137,27 @@ func (h *PostHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 	slog.Info("created post")
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (h *PostHandler) addComment(w http.ResponseWriter, r *http.Request, postID string) {
+	userSession := getSession(r)
+	parentStr := r.FormValue("parent_id")
+	var parent uint64
+	if parentStr != "" {
+		if v, err := strconv.ParseUint(parentStr, 10, 64); err == nil {
+			parent = v
+		}
+	}
+	comment := &domain.Comment{
+		UserName:        userSession.Name,
+		UserAvatar:      userSession.Avatar,
+		ParentCommentID: parent,
+		Content:         r.FormValue("content"),
+	}
+	err := h.svc.CreateComment(comment, postID)
+	if err != nil {
+		renderError(w, h.tmpl, statusCode, msg)
+		return
+	}
+	http.Redirect(w, r, "/post/"+postID, http.StatusSeeOther)
 }

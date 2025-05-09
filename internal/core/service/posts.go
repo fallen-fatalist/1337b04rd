@@ -10,14 +10,14 @@ import (
 )
 
 type PostService struct {
-	repo       port.PostRepository
-	commentSvc *CommentService
+	repo        port.PostRepository
+	commentRepo port.CommentRepository
 }
 
-func NewPostService(repo port.PostRepository, commentSvc *CommentService) *PostService {
+func NewPostService(repo port.PostRepository, commentRepo port.CommentRepository) *PostService {
 	return &PostService{
-		repo:       repo,
-		commentSvc: commentSvc,
+		repo:        repo,
+		commentRepo: commentRepo,
 	}
 }
 
@@ -49,7 +49,7 @@ func (s *PostService) ListActive() ([]domain.Post, error) {
 	now := time.Now()
 
 	for _, post := range posts {
-		comment, err := s.commentSvc.repo.GetLastComment(&post.ID)
+		comment, err := s.commentRepo.GetLastComment(&post.ID)
 		if err != nil {
 			// No comment found, fallback to post time
 			if errors.Is(err, sql.ErrNoRows) {
@@ -77,6 +77,20 @@ func (s *PostService) GetPostWithCommentsById(idStr string) (*domain.PostComents
 		return nil, port.ErrInvalidPostId
 	}
 	return s.repo.GetPostWithCommentsById(&id)
+}
+
+func (s *PostService) CreateComment(comment *domain.Comment, idStr string) error {
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		return port.ErrInvalidPostId
+	}
+
+	comment.PostID = id
+
+	if err := s.commentRepo.CreateComment(comment); err != nil {
+		return err
+	}
+	return nil
 }
 
 func validatePost(p *domain.Post) error {

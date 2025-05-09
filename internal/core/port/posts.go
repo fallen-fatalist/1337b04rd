@@ -13,4 +13,5 @@ type PostService interface {
 	ListPosts() ([]domain.Post, error)
 	ListActive() ([]domain.Post, error)
 	GetPostWithCommentsById(id string) (*domain.PostComents, error)
+	CreateComment(comment *domain.Comment, id string) error
 }

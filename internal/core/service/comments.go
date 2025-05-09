@@ -1,7 +1,6 @@
 package service
 
 import (
-	"1337bo4rd/internal/core/domain"
 	"1337bo4rd/internal/core/port"
 )
 
@@ -15,6 +14,6 @@ func NewCommentService(repo port.CommentRepository) *CommentService {
 	}
 }
 
-func (s *CommentService) GetLastComment(id *uint64) (*domain.Comment, error) {
-	return s.repo.GetLastComment(id)
-}
+// func (s *CommentService) GetLastComment(id *uint64) (*domain.Comment, error) {
+// 	return s.repo.GetLastComment(id)
+// }

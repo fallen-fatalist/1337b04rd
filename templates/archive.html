@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1337bo4rd Archive</title>
+    <title>1337b04rd Archive</title>
     <style>
         body {
-            background-color: #f0f0f0;
-            font-family: 'Arial', sans-serif;
+            background-color: #eef1f5;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
             color: #333;
@@ -18,8 +18,9 @@
             align-items: center;
             margin-bottom: 20px;
             padding: 10px;
-            background-color: #ddd;
-            border-radius: 5px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .header h1 {
             margin: 0;
@@ -28,7 +29,7 @@
         .button {
             display: inline-block;
             padding: 8px 16px;
-            background-color: #555;
+            background-color: #444;
             color: white;
             text-decoration: none;
             border-radius: 4px;
@@ -37,7 +38,7 @@
             cursor: pointer;
         }
         .button:hover {
-            background-color: #333;
+            background-color: #222;
         }
         .catalog {
             display: grid;
@@ -45,10 +46,10 @@
             gap: 15px;
         }
         .thread {
-            background-color: white;
-            border-radius: 5px;
+            background-color: #fff;
+            border-radius: 8px;
             padding: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: transform 0.2s;
             overflow: hidden;
         }
@@ -60,11 +61,17 @@
             width: 100%;
             height: 150px;
             object-fit: cover;
-            border-radius: 3px;
+            border-radius: 5px;
             margin-bottom: 10px;
+            background-color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 15px;
         }
         .thread-title {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.4;
             max-height: 100px;
             overflow: hidden;
@@ -74,7 +81,7 @@
         .thread-info {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
+            font-size: 15px;
             color: #777;
         }
         .thread-link {
@@ -90,15 +97,19 @@
         .info-box {
             margin-top: 20px;
             padding: 10px;
-            background-color: #ddd;
-            border-radius: 5px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             font-size: 18px;
+        }
+        .info-box ul {
+            padding-left: 20px;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>1337bo4rd Archive</h1>
+        <h1>1337b04rd Archive</h1>
         <div>
             <a href="/" class="button">Catalog</a>
             <a href="/create" class="button">New Thread</a>
@@ -113,9 +124,7 @@
                         {{if .Image}}
                             <img src="{{.Image}}" alt="Thread image" class="thread-image">
                         {{else}}
-                            <div class="thread-image" style="background-color: #eee; display: flex; align-items: center; justify-content: center;">
-                                <span>No image</span>
-                            </div>
+                            <div class="thread-image">No image</div>
                         {{end}}
                         <div class="thread-title">{{.Title}}</div>
                         <div class="thread-info">
@@ -131,7 +140,7 @@
     </div>
     
     <div class="info-box">
-        <p>Thread deletion rules:</p>
+        <p><strong>Thread deletion rules:</strong></p>
         <ul>
             <li>Posts without comments are deleted after 10 minutes</li>
             <li>Posts with comments are deleted 15 minutes after the last comment</li>

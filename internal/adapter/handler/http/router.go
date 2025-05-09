@@ -12,11 +12,10 @@ func NewRouter(
 	mux := http.NewServeMux()
 
 	mw := SessionMiddleware(userSvc)
-
-	mux.Handle("/", mw(http.HandlerFunc(postHandler.HandleCatalog)))
+	mux.Handle("/post/", mw(http.HandlerFunc(postHandler.HandlePost)))
 	mux.Handle("/archive", mw(http.HandlerFunc(postHandler.HandleArchive)))
-	mux.Handle("/post/{id}", mw(http.HandlerFunc(postHandler.HandlePost)))
 	mux.Handle("/create", mw(http.HandlerFunc(postHandler.HandleCreate)))
+	mux.Handle("/", mw(http.HandlerFunc(postHandler.HandleCatalog)))
 
 	return mux
 }

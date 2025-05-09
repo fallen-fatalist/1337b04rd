@@ -11,3 +11,8 @@ type Comment struct {
 	Content         string
 	CreatedAt       time.Time
 }
+
+type CommentNode struct {
+	*Comment
+	Replies []*CommentNode
+}

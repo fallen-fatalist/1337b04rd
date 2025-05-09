@@ -22,9 +22,6 @@ func NewPostService(repo port.PostRepository, commentRepo port.CommentRepository
 }
 
 func (s *PostService) CreatePost(post *domain.Post) error {
-	if err := validatePost(post); err != nil {
-		return err
-	}
 	return s.repo.CreatePost(post)
 }
 
@@ -55,7 +52,10 @@ func (s *PostService) ListActive() ([]domain.Post, error) {
 				if now.Sub(post.CreatedAt) < 10*time.Minute {
 					validPosts = append(validPosts, post)
 				} else {
-					_ = s.repo.UpdatePostArchivedAt(post.ID, &now)
+					err = s.repo.UpdatePostArchivedAt(post.ID, &now)
+					if err != nil {
+						return nil, err
+					}
 				}
 				continue
 			}
@@ -67,7 +67,10 @@ func (s *PostService) ListActive() ([]domain.Post, error) {
 		if now.Sub(comment.CreatedAt) < 15*time.Minute {
 			validPosts = append(validPosts, post)
 		} else {
-			_ = s.repo.UpdatePostArchivedAt(post.ID, &now)
+			err = s.repo.UpdatePostArchivedAt(post.ID, &now)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -92,15 +95,6 @@ func (s *PostService) CreateComment(comment *domain.Comment, idStr string) error
 
 	if err := s.commentRepo.CreateComment(comment); err != nil {
 		return err
-	}
-	return nil
-}
-
-func validatePost(p *domain.Post) error {
-	if p.Title == "" {
-		return port.ErrEmptyTitle
-	} else if p.Content == "" {
-		return port.ErrEmptyContent
 	}
 	return nil
 }

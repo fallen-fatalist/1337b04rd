@@ -36,12 +36,20 @@ func (h *PostHandler) HandleCatalog(w http.ResponseWriter, r *http.Request) {
 		renderError(w, h.tmpl, statusCode, msg)
 		return
 	}
-	posts, _ := h.svc.ListActive()
+	posts, err := h.svc.ListActive()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		renderError(w, h.tmpl, statusCode, msg)
+		return
+	}
 	h.tmpl.ExecuteTemplate(w, "catalog.html", struct{ Posts []domain.Post }{posts})
 }
 
 func (h *PostHandler) HandleArchive(w http.ResponseWriter, r *http.Request) {
-	posts, _ := h.svc.ListPosts()
+	posts, err := h.svc.ListPosts()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		renderError(w, h.tmpl, statusCode, msg)
+		return
+	}
 	h.tmpl.ExecuteTemplate(w, "archive.html", struct{ Posts []domain.Post }{posts})
 }
 
@@ -61,7 +69,7 @@ func (h *PostHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 		switch err {
 		case sql.ErrNoRows:
 			msg = port.ErrNoPosts.Error()
-			statusCode = http.StatusBadRequest
+			statusCode = http.StatusNotFound
 		case port.ErrInvalidPostId:
 			statusCode = http.StatusBadRequest
 			msg = err.Error()
@@ -131,10 +139,6 @@ func (h *PostHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 
 	err := h.svc.CreatePost(post)
 	if err != nil {
-		if errors.Is(err, port.ErrEmptyTitle) || errors.Is(err, port.ErrEmptyContent) {
-			statusCode = http.StatusBadRequest
-			msg = err.Error()
-		}
 		renderError(w, h.tmpl, statusCode, msg)
 		return
 	}
@@ -159,6 +163,10 @@ func (h *PostHandler) addComment(w http.ResponseWriter, r *http.Request, postID 
 	}
 	err := h.svc.CreateComment(comment, postID)
 	if err != nil {
+		if errors.Is(err, port.ErrInvalidPostId) {
+			statusCode = http.StatusBadRequest
+			msg = err.Error()
+		}
 		renderError(w, h.tmpl, statusCode, msg)
 		return
 	}

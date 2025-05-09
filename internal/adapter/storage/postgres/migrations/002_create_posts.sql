@@ -5,5 +5,6 @@ CREATE TABLE posts (
     title VARCHAR(20) NOT NULL,
     content TEXT NOT NULL,
     image TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    archived_at TIMESTAMPTZ
 );

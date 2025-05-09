@@ -98,8 +98,11 @@ func (h *PostHandler) HandlePost(w http.ResponseWriter, r *http.Request) {
 		CommentTree: roots,
 		User:        getSession(r),
 	}
-
-	h.tmpl.ExecuteTemplate(w, "post.html", data)
+	if !postWithComments.Post.ArchivedAt.IsZero() {
+		h.tmpl.ExecuteTemplate(w, "archive-post.html", data)
+	} else {
+		h.tmpl.ExecuteTemplate(w, "post.html", data)
+	}
 }
 
 func (h *PostHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {

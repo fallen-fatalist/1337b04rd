@@ -10,6 +10,7 @@ type Post struct {
 	Content    string
 	Image      string
 	CreatedAt  time.Time
+	ArchivedAt time.Time
 }
 
 type PostComents struct {

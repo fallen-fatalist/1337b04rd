@@ -33,7 +33,6 @@ func (s *PostService) ListPosts() ([]domain.Post, error) {
 	if err != nil {
 		return nil, err
 	}
-	// add logic for deleted threads
 
 	return posts, nil
 
@@ -55,6 +54,8 @@ func (s *PostService) ListActive() ([]domain.Post, error) {
 			if errors.Is(err, sql.ErrNoRows) {
 				if now.Sub(post.CreatedAt) < 10*time.Minute {
 					validPosts = append(validPosts, post)
+				} else {
+					_ = s.repo.UpdatePostArchivedAt(post.ID, &now)
 				}
 				continue
 			}
@@ -65,6 +66,8 @@ func (s *PostService) ListActive() ([]domain.Post, error) {
 		// If comment exists, check if it's recent enough
 		if now.Sub(comment.CreatedAt) < 15*time.Minute {
 			validPosts = append(validPosts, post)
+		} else {
+			_ = s.repo.UpdatePostArchivedAt(post.ID, &now)
 		}
 	}
 

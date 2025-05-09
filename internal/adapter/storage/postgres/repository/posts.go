@@ -58,8 +58,16 @@ func (r *PostRepository) ListPosts() ([]domain.Post, error) {
 	for rows.Next() {
 		var post domain.Post
 		var image sql.NullString
-		if err := rows.Scan(&post.ID, &post.UserName, &post.UserAvatar, &post.Title, &post.Content, &image, &post.CreatedAt); err != nil {
+		var archivedAt sql.NullTime
+		if err := rows.Scan(&post.ID, &post.UserName, &post.UserAvatar, &post.Title, &post.Content, &image, &post.CreatedAt, &archivedAt); err != nil {
 			return nil, err
+		}
+
+		if image.Valid {
+			post.Image = image.String
+		}
+		if archivedAt.Valid {
+			post.ArchivedAt = archivedAt.Time
 		}
 
 		posts = append(posts, post)
@@ -75,7 +83,7 @@ func (r *PostRepository) ListPosts() ([]domain.Post, error) {
 func (r *PostRepository) GetPostWithCommentsById(id *uint64) (*domain.PostComents, error) {
 	query := `
 	SELECT 
-		p.post_id, p.user_name, p.user_avatar, p.title, p.content, p.image, p.created_at,
+		p.post_id, p.user_name, p.user_avatar, p.title, p.content, p.image, p.created_at, p.archived_at,
 		c.comment_id, c.user_name, c.user_avatar, c.post_id, c.parent_comment_id, c.content, c.created_at
 	FROM posts p
 	LEFT JOIN comments c ON c.post_id = p.post_id
@@ -102,6 +110,7 @@ func (r *PostRepository) GetPostWithCommentsById(id *uint64) (*domain.PostComent
 			content      string
 			image        sql.NullString
 			createdAt    time.Time
+			archivedAt   sql.NullTime
 
 			commentID        sql.NullInt64
 			commentUserName  sql.NullString
@@ -113,7 +122,7 @@ func (r *PostRepository) GetPostWithCommentsById(id *uint64) (*domain.PostComent
 		)
 
 		if err := rows.Scan(
-			&postID, &postUserName, &postAvatar, &title, &content, &image, &createdAt,
+			&postID, &postUserName, &postAvatar, &title, &content, &image, &createdAt, &archivedAt,
 			&commentID, &commentUserName, &commentAvatar, &commentPostID, &parentCommentID, &commentContent, &commentCreatedAt,
 		); err != nil {
 			return nil, err
@@ -129,6 +138,14 @@ func (r *PostRepository) GetPostWithCommentsById(id *uint64) (*domain.PostComent
 				Image:      image.String,
 				CreatedAt:  createdAt,
 			}
+
+			if image.Valid {
+				post.Image = image.String
+			}
+			if archivedAt.Valid {
+				post.ArchivedAt = archivedAt.Time
+			}
+
 			seen = true
 		}
 
@@ -154,4 +171,15 @@ func (r *PostRepository) GetPostWithCommentsById(id *uint64) (*domain.PostComent
 		Post:     post,
 		Comments: comments,
 	}, nil
+}
+
+func (r *PostRepository) UpdatePostArchivedAt(postID uint64, archivedAt *time.Time) error {
+	query := `
+		UPDATE posts
+		SET archived_at = $1
+		WHERE post_id = $2
+	`
+
+	_, err := r.db.Exec(query, archivedAt, postID)
+	return err
 }
